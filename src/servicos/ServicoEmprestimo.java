@@ -144,6 +144,12 @@ public class ServicoEmprestimo implements VerificarListas{
                 .anyMatch(emp -> emp.getUsuario().equals(usuario));
     }
 
+    public boolean livroTemEmprestimoAtivo(long idLivro){
+        Livro livro = servicoLivro.buscarPorId(idLivro); // verifica se o livro existe
+        return repositorioEmprestimo.listar().stream()
+                .anyMatch(emp -> emp.getLivrosEmprestado().containsKey(livro));
+    }
+
     public void imprimir(Emprestimo emprestimo){
         System.out.println("----------Emprestimo----------");
         System.out.printf("Emprestimo ID: %-5d Usuário ID: %-5d Nome: %s%n",

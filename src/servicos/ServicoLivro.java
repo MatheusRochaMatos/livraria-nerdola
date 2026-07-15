@@ -1,6 +1,7 @@
 package servicos;
 
 import entidades.Livro;
+import entidades.Usuario;
 import repositorios.RepositorioLivro;
 import servicos.excecao.RecursoNaoEncontrado;
 
@@ -101,5 +102,27 @@ public class ServicoLivro implements VerificarListas {
         entidade.setTitulo(obj.getTitulo());
         entidade.setAutor(obj.getAutor());
         entidade.setAno(obj.getAno());
+    }
+
+    public void imprimir(Livro livro){
+        System.out.println("---------------------------------------------------------------------------Livro" +
+                "---------------------------------------------------------------------------");
+        imprimirLinha(livro);
+        System.out.println("--------------------------------------------------------------------------------" +
+                "---------------------------------------------------------------------------");
+    }
+
+    public void imprimirLista(List<Livro> livros){
+        System.out.println("---------------------------------------------------------------------------Livros" +
+                "---------------------------------------------------------------------------");
+        livros.forEach(this::imprimirLinha);
+        System.out.println("---------------------------------------------------------------------------------" +
+                "---------------------------------------------------------------------------");
+    }
+
+    private void imprimirLinha(Livro livro){
+        System.out.printf("Livro ID: %-5d Título: %-65s Ano: %-5d  Autor: %-25s Status: %s%n",
+                livro.getId(), livro.getTitulo(), livro.getAno(), livro.getAutor(),
+                livro.isDisponivel() ? "Disponível" : "Emprestado");
     }
 }
