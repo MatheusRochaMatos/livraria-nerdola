@@ -1,3 +1,4 @@
+import entidades.Livro;
 import entidades.Usuario;
 import repositorios.RepositorioEmprestimo;
 import repositorios.RepositorioLivro;
@@ -20,7 +21,7 @@ void main() {
     CargaTeste.popularDados(servicoLivro, servicoUsuario, servicoEmprestimo);
 
     boolean rodando = true;
-    int opcao = -1;
+    int opcao;
 
     while (rodando) {
 
@@ -45,7 +46,7 @@ void main() {
             sc.nextLine();
         }
 
-        int opcaoInterna = -1;
+        int opcaoInterna;
 
         switch (opcao) {
             case 1:
@@ -107,7 +108,7 @@ void main() {
                     switch (opcaoInterna) {
                         case 1 -> cadastrarLivro(sc, servicoLivro);
                         case 2 -> atualizarLivro(sc, servicoLivro);
-                        case 3 -> removerLivro(sc, servicoLivro);
+                        case 3 -> removerLivro(sc, servicoLivro, servicoEmprestimo);
                         case 4 -> buscarLivroPorTitulo(sc, servicoLivro);
                         case 5 -> buscarLivroPorId(sc, servicoLivro);
                         case 0 -> subMenuLivros = false;
@@ -178,14 +179,29 @@ private static void cadastrarUsuario(Scanner sc, ServicoUsuario servicoUsuario){
 
 private static void atualizarUsuario(Scanner sc, ServicoUsuario servicoUsuario) {
 
-    int idUsuario = lerIdComValidacao(sc, "Digite o id do usuário: ");
+    long idUsuario = lerNumerosComValidacao(sc, "Digite o id do usuário (0 para cancelar): ");
+
+    if (idUsuario == 0){
+        System.out.println("Operação cancelada.");
+        return;
+    }
+
+    System.out.println("Usuário a ser atualizado:");
+
+    try {
+        Usuario usuarioAtual = servicoUsuario.buscarPorId(idUsuario);
+        servicoUsuario.imprimir(usuarioAtual);
+    } catch (RecursoNaoEncontrado e) {
+        System.out.println("Erro: " + e.getMessage());
+        return;
+    }
 
     System.out.print("Digite o nome que deseja: ");
     String nome = sc.nextLine();
 
     Optional<String> emailOpt = lerEmailComValidacao(sc);
     if(emailOpt.isEmpty()){
-        System.out.println("Cadastro cancelado.");
+        System.out.println("Atualização cancelada.");
         return;
     }
 
@@ -202,7 +218,12 @@ private static void atualizarUsuario(Scanner sc, ServicoUsuario servicoUsuario) 
 
 private static void removerUsuario(Scanner sc, ServicoUsuario servicoUsuario, ServicoEmprestimo servicoEmprestimo){
 
-    int idUsuario = lerIdComValidacao(sc, "Digite o id do usuário: ");
+    long idUsuario = lerNumerosComValidacao(sc, "Digite o id do usuário (0 para cancelar): ");
+
+    if (idUsuario == 0){
+        System.out.println("Operação cancelada.");
+        return;
+    }
 
     try {
         if (servicoEmprestimo.usuarioTemEmprestimoAtivo(idUsuario)) {
@@ -218,7 +239,12 @@ private static void removerUsuario(Scanner sc, ServicoUsuario servicoUsuario, Se
 
 private static void bloquearUsuario(Scanner sc, ServicoUsuario servicoUsuario){
 
-    int idUsuario = lerIdComValidacao(sc, "Digite o id do usuário: ");
+    long idUsuario = lerNumerosComValidacao(sc, "Digite o id do usuário (0 para cancelar): ");
+
+    if (idUsuario == 0){
+        System.out.println("Operação cancelada.");
+        return;
+    }
 
     try {
         servicoUsuario.bloquearUsuarioPorId(idUsuario);
@@ -231,7 +257,12 @@ private static void bloquearUsuario(Scanner sc, ServicoUsuario servicoUsuario){
 
 private static void desbloquearUsuario(Scanner sc, ServicoUsuario servicoUsuario){
 
-    int idUsuario = lerIdComValidacao(sc, "Digite o id do usuário: ");
+    long idUsuario = lerNumerosComValidacao(sc, "Digite o id do usuário (0 para cancelar): ");
+
+    if (idUsuario == 0){
+        System.out.println("Operação cancelada.");
+        return;
+    }
 
     try {
         servicoUsuario.desbloquearUsuarioPorId(idUsuario);
@@ -257,7 +288,12 @@ private static void buscarUsuarioPorNome(Scanner sc, ServicoUsuario servicoUsuar
 
 private static void buscarUsuarioPorId(Scanner sc, ServicoUsuario servicoUsuario){
 
-    int idUsuario = lerIdComValidacao(sc, "Digite o id do usuário: ");
+    long idUsuario = lerNumerosComValidacao(sc, "Digite o id do usuário (0 para cancelar): ");
+
+    if (idUsuario == 0){
+        System.out.println("Operação cancelada.");
+        return;
+    }
 
     try {
         Usuario usuario = servicoUsuario.buscarPorId(idUsuario);
@@ -268,11 +304,124 @@ private static void buscarUsuarioPorId(Scanner sc, ServicoUsuario servicoUsuario
     }
 }
 
-private static int lerIdComValidacao (Scanner sc, String mensagem){
+private static void cadastrarLivro(Scanner sc, ServicoLivro servicoLivro){
+    System.out.println("Digite os dados do livro: ");
+    System.out.print("Título: ");
+    String titulo = sc.nextLine();
+    System.out.print("Autor: ");
+    String autor = sc.nextLine();
+
+    int anoAtual = LocalDate.now().getYear();
+    long anoValidado = lerNumerosComValidacao(sc, "Ano (yyyy): ");
+
+    while (anoValidado < 1000 || anoValidado > anoAtual){
+        System.out.println("Ano digitado está incorreto!");
+        anoValidado = lerNumerosComValidacao(sc, "Ano (yyyy): ");
+    }
+
+    short ano = (short) anoValidado;
+
+    servicoLivro.cadastrar(new Livro(titulo, autor, ano));
+}
+
+private static void atualizarLivro(Scanner sc, ServicoLivro servicoLivro){
+
+    long idLivro = lerNumerosComValidacao(sc, "Digite o id do livro (0 para cancelar): ");
+
+    if (idLivro == 0){
+        System.out.println("Operação cancelada.");
+        return;
+    }
+
+    System.out.println("Livro a ser atualizado:");
+
+    try {
+        Livro livroAtual = servicoLivro.buscarPorId(idLivro);
+        servicoLivro.imprimir(livroAtual);
+    } catch (RecursoNaoEncontrado e) {
+        System.out.println("Erro: " + e.getMessage());
+        return;
+    }
+
+    System.out.print("Digite o título desejado: ");
+    String titulo = sc.nextLine();
+    System.out.print("Digite o autor do livro: ");
+    String autor = sc.nextLine();
+
+    int anoAtual = LocalDate.now().getYear();
+    long anoValidado = lerNumerosComValidacao(sc, "Digite o ano do livro (yyyy): ");
+
+    while (anoValidado < 1000 || anoValidado > anoAtual){
+        System.out.println("Ano digitado está incorreto!");
+        anoValidado = lerNumerosComValidacao(sc, "Digite o ano do livro (yyyy): ");
+    }
+
+    short ano = (short) anoValidado;
+
+    try {
+        servicoLivro.atualizarLivro(idLivro, new Livro(titulo, autor, ano));
+        System.out.println("Livro atualizado com sucesso.");
+    }
+    catch (RecursoNaoEncontrado e){
+        System.out.println("Erro: " + e.getMessage());
+    }
+}
+
+private static void removerLivro(Scanner sc, ServicoLivro servicoLivro, ServicoEmprestimo servicoEmprestimo){
+    long idLivro = lerNumerosComValidacao(sc, "Digite o id do livro (0 para cancelar): ");
+
+    if (idLivro == 0){
+        System.out.println("Operação cancelada.");
+        return;
+    }
+
+    try {
+        if (servicoEmprestimo.livroTemEmprestimoAtivo(idLivro)) {
+            System.out.println("Não é possível remover: livro está emprestado.");
+        } else {
+            servicoLivro.removerPorId(idLivro);
+            System.out.println("Livro removido com sucesso!");
+        }
+    } catch (RecursoNaoEncontrado e) {
+        System.out.println("Erro: " + e.getMessage());
+    }
+}
+
+private static void buscarLivroPorTitulo(Scanner sc, ServicoLivro servicoLivro){
+    System.out.print("Digite o título do livro: ");
+    String titulo = sc.nextLine();
+
+    try {
+        List<Livro> livros = servicoLivro.listarPorTitulo(titulo);
+        servicoLivro.imprimirLista(livros);
+    }
+    catch (RecursoNaoEncontrado e){
+        System.out.println("Erro: " + e.getMessage());
+    }
+}
+
+private static void buscarLivroPorId(Scanner sc, ServicoLivro servicoLivro){
+    long idLivro = lerNumerosComValidacao(sc, "Digite o id do livro (0 para cancelar): ");
+
+    if (idLivro == 0){
+        System.out.println("Operação cancelada.");
+        return;
+    }
+
+    try {
+        Livro livro = servicoLivro.buscarPorId(idLivro);
+        servicoLivro.imprimir(livro);
+    }
+    catch (RecursoNaoEncontrado e){
+        System.out.println("Erro: " + e.getMessage());
+    }
+}
+
+private static long lerNumerosComValidacao(Scanner sc, String mensagem){
     while (true){
         System.out.print(mensagem);
         try {
-            int id = sc.nextInt();
+            long id = sc.nextLong();
             sc.nextLine();
             return id;
         }
