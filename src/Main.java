@@ -457,6 +457,12 @@ private static void emprestarLivro(Scanner sc, ServicoEmprestimo servicoEmpresti
         return;
     }
 
+    boolean usuarioTemEmprestimo = servicoEmprestimo.usuarioTemEmprestimoAtivo(idUsuario);
+    if (usuarioTemEmprestimo){
+        System.out.println("Usuário possui empréstimos pendentes! Operação cancelada.");
+        return;
+    }
+
     Set<Livro> livros = new HashSet<>();
     while (true) {
         long idLivro = lerNumerosComValidacao(sc, "Digite o id do livro (0 para cancelar o empréstimo inteiro): ");

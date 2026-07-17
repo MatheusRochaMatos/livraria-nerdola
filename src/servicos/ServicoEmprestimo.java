@@ -31,6 +31,10 @@ public class ServicoEmprestimo implements VerificarListas<Emprestimo>{
             throw new IllegalStateException("Usuário de ID: " + emprestimo.getUsuario().getId() + ", está bloqueado!");
         }
 
+        boolean usuarioTemEmprestimo = usuarioTemEmprestimoAtivo(emprestimo.getUsuario().getId());
+        if (usuarioTemEmprestimo){
+            throw new IllegalStateException("Usuário de ID: " + emprestimo.getUsuario().getId() + " possui empréstimos pendentes!");
+        }
 
         for (Livro livro : emprestimo.getLivrosEmprestado().keySet()) {
             boolean livroDisponivel = servicoLivro.verificarSituacaoDoLivro(livro);
@@ -185,5 +189,6 @@ public class ServicoEmprestimo implements VerificarListas<Emprestimo>{
                     entry.getKey().getId(), entry.getKey().getTitulo(),
                     dataDevolucaoTexto);
         }
+        System.out.println();
     }
 }
