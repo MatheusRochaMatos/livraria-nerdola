@@ -99,21 +99,35 @@ public class CargaTeste {
         livrosEmp3.put(livroHobbit1, null);
 
         Map<Livro, LocalDate> livrosEmp4 = new HashMap<>();
-        livrosEmp4.put(livroHP4, LocalDate.parse("2025-11-16"));
-        livrosEmp4.put(livroHP5, LocalDate.parse("2025-11-12"));
-        livrosEmp4.put(livroHP6, LocalDate.parse("2025-11-07"));
+        livrosEmp4.put(livroHP4, null);
+        livrosEmp4.put(livroHP5, null);
+        livrosEmp4.put(livroHP6, null);
 
         Map<Livro, LocalDate> livrosEmp5 = new HashMap<>();
-        livrosEmp5.put(livroSW3, LocalDate.parse("2025-09-09"));
-        livrosEmp5.put(livroSW4, LocalDate.parse("2025-09-19"));
+        livrosEmp5.put(livroSW3, null);
+        livrosEmp5.put(livroSW4, null);
 
         Emprestimo e1 = new Emprestimo(servicoUsuario.buscarPorId(9), livrosEmp5,
                 LocalDate.of(2025, 9, 5),
                 LocalDate.of(2025, 9, 20));
 
+        servicoEmprestimo.salvarEmprestimo(e1);
+        servicoEmprestimo.devolverLivroId(10);
+        servicoEmprestimo.devolverLivroId(11);
+        servicoEmprestimo.atualizarDataDeDevolucaoNoHistorico(e1, livroSW3, LocalDate.parse("2025-09-09"));
+        servicoEmprestimo.atualizarDataDeDevolucaoNoHistorico(e1, livroSW4, LocalDate.parse("2025-09-19"));
+
         Emprestimo e2 = new Emprestimo(servicoUsuario.buscarPorId(7), livrosEmp4,
                 LocalDate.of(2025, 10, 28),
                 LocalDate.of(2025, 11, 15));
+
+        servicoEmprestimo.salvarEmprestimo(e2);
+        servicoEmprestimo.devolverLivroId(4);
+        servicoEmprestimo.devolverLivroId(5);
+        servicoEmprestimo.devolverLivroId(6);
+        servicoEmprestimo.atualizarDataDeDevolucaoNoHistorico(e2, livroHP4, LocalDate.parse("2025-11-16"));
+        servicoEmprestimo.atualizarDataDeDevolucaoNoHistorico(e2, livroHP5, LocalDate.parse("2025-11-12"));
+        servicoEmprestimo.atualizarDataDeDevolucaoNoHistorico(e2, livroHP6, LocalDate.parse("2025-11-07"));
 
         Emprestimo e3 = new Emprestimo(servicoUsuario.buscarPorId(1), livrosEmp1,
                 LocalDate.of(2026, 5, 27),
@@ -126,29 +140,6 @@ public class CargaTeste {
         Emprestimo e5 = new Emprestimo(servicoUsuario.buscarPorId(5), livrosEmp3,
                 LocalDate.of(2026, 6, 1),
                 LocalDate.of(2026, 6, 15));
-
-
-        servicoEmprestimo.salvarEmprestimo(e1);
-        servicoEmprestimo.salvarEmprestimo(e2);
-
-        servicoEmprestimo.devolverLivroId(10);
-        servicoEmprestimo.devolverLivroId(11);
-
-        servicoEmprestimo.devolverLivroId(4);
-        servicoEmprestimo.devolverLivroId(5);
-        servicoEmprestimo.devolverLivroId(6);
-
-        /*
-        * Como estou simulando a devolução, o metodo devolve o livro com um LocalDate.now
-        *       abaixo insiro novamente as datas de devolução (simulada) no histórico.
-         */
-
-        servicoEmprestimo.atualizarDataDeDevolucaoNoHistorico(e1, livroSW3, LocalDate.parse("2025-09-09"));
-        servicoEmprestimo.atualizarDataDeDevolucaoNoHistorico(e1, livroSW4, LocalDate.parse("2025-09-19"));
-        servicoEmprestimo.atualizarDataDeDevolucaoNoHistorico(e2, livroHP4, LocalDate.parse("2025-11-16"));
-        servicoEmprestimo.atualizarDataDeDevolucaoNoHistorico(e2, livroHP5, LocalDate.parse("2025-11-12"));
-        servicoEmprestimo.atualizarDataDeDevolucaoNoHistorico(e2, livroHP6, LocalDate.parse("2025-11-07"));
-
 
         servicoEmprestimo.salvarEmprestimo(e3);
         servicoEmprestimo.salvarEmprestimo(e4);
