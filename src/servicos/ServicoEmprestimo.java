@@ -11,7 +11,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class ServicoEmprestimo implements VerificarListas{
+public class ServicoEmprestimo implements VerificarListas<Emprestimo>{
     private final static DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     private final RepositorioEmprestimo repositorioEmprestimo;
@@ -25,9 +25,22 @@ public class ServicoEmprestimo implements VerificarListas{
     }
 
     public void salvarEmprestimo(Emprestimo emprestimo){
-        verificarSituacao(emprestimo.getUsuario(), emprestimo.getLivrosEmprestado());
+        // Alterado o metodo de verificação, agora cada serviço sabe sobre sua entidade.
+        boolean usuarioLiberado = servicoUsuario.verificarSituacaoDoUsuario(emprestimo.getUsuario());
+        if (!usuarioLiberado){
+            throw new IllegalStateException("Usuário de ID: " + emprestimo.getUsuario().getId() + ", está bloqueado!");
+        }
+
 
         for (Livro livro : emprestimo.getLivrosEmprestado().keySet()) {
+            boolean livroDisponivel = servicoLivro.verificarSituacaoDoLivro(livro);
+
+            if(!livroDisponivel){
+                throw new IllegalStateException("Livro de ID: " + livro.getId() + ", não está disponível!");
+            }
+        }
+
+        for(Livro livro : emprestimo.getLivrosEmprestado().keySet()){
             livro.setDisponivel(false);
         }
 
@@ -49,13 +62,22 @@ public class ServicoEmprestimo implements VerificarListas{
     }
 
     public void devolverLivroId(long livroId){
-        Emprestimo emprestimo = repositorioEmprestimo.buscarEmprestimoPorLivroId(livroId)
-                .orElseThrow(() -> new RecursoNaoEncontrado("Nenhum empréstimo ativo encontrado para o livro: " + livroId));
+
+        /*
+         * Mudei a ordem do código para validar a existência do livro logo no início.
+         * Assim, se o usuário digitar um ID que não existe, o sistema já barra o erro de cara.
+         * Isso evita fazer buscas desnecessárias por empréstimos usando um ID inválido.
+         * Além disso, mudei a busca do empréstimo para usar o objeto do livro direto em vez do livroId.
+         */
 
         Livro livro = servicoLivro.buscarPorId(livroId);
+
+        Emprestimo emprestimo = repositorioEmprestimo.buscarEmprestimoPorLivro(livro)
+                .orElseThrow(() -> new RecursoNaoEncontrado("Nenhum empréstimo ativo encontrado para o livro: " + livroId));
+
         livro.setDisponivel(true);
-        emprestimo.removerLivroDoMap(livro);
         atualizarDataDeDevolucaoNoHistorico(emprestimo, livro, LocalDate.now());
+        emprestimo.removerLivroDoMap(livro);
         finalizarEmprestimoSeVazio(emprestimo);
     }
 
@@ -107,7 +129,7 @@ public class ServicoEmprestimo implements VerificarListas{
         }
     }
 
-    public Map<Livro, LocalDate> criarMapDeLivros(List<Livro> livros){
+    public Map<Livro, LocalDate> criarMapDeLivros(Set<Livro> livros){
         validarLimiteLivros(livros);
 
         Map<Livro, LocalDate> map = new HashMap<>();
@@ -117,24 +139,9 @@ public class ServicoEmprestimo implements VerificarListas{
         return map;
     }
 
-    public void validarLimiteLivros(List<Livro> livrosEscolhidos){
+    public void validarLimiteLivros(Set<Livro> livrosEscolhidos){
         if (livrosEscolhidos.size() > 3) {
             throw new IllegalArgumentException("Limite de 3 livros por empréstimo atingido!");
-        }
-    }
-
-    private void verificarSituacao(Usuario usuario, Map<Livro, LocalDate> livros){
-        servicoUsuario.buscarPorId(usuario.getId());
-        if(!usuario.isLiberado()){
-            throw new IllegalStateException("Usuário de ID: " + usuario.getId() + ", está bloqueado!");
-        }
-
-        for (Livro livro : livros.keySet()) {
-            servicoLivro.buscarPorId(livro.getId());
-
-            if(!livro.isDisponivel()){
-                throw new IllegalStateException("Livro de ID: " + livro.getId() + ", não está disponível!");
-            }
         }
     }
 
@@ -151,7 +158,18 @@ public class ServicoEmprestimo implements VerificarListas{
     }
 
     public void imprimir(Emprestimo emprestimo){
-        System.out.println("----------Emprestimo----------");
+        System.out.println("-----------------------------------------------Empréstimo-----------------------------------------------");
+        imprimirLinha(emprestimo);
+        System.out.println("--------------------------------------------------------------------------------------------------------");
+    }
+
+    public void imprimirLista(List<Emprestimo> emprestimos){
+        System.out.println("-----------------------------------------------Empréstimos-----------------------------------------------");
+        emprestimos.forEach(this::imprimirLinha);
+        System.out.println("---------------------------------------------------------------------------------------------------------");
+    }
+
+    private void imprimirLinha(Emprestimo emprestimo){
         System.out.printf("Emprestimo ID: %-5d Usuário ID: %-5d Nome: %s%n",
                 emprestimo.getId(), emprestimo.getUsuario().getId(), emprestimo.getUsuario().getNome());
 
@@ -159,10 +177,13 @@ public class ServicoEmprestimo implements VerificarListas{
                 fmt.format(emprestimo.getDataEmprestimo()), fmt.format(emprestimo.getDataPrevista()));
         System.out.println();
 
-        for (Livro livro : emprestimo.getLivrosEmprestado().keySet()) {
-            System.out.printf("ID: %-5d Título: %s%n", livro.getId(), livro.getTitulo());
-        }
+        for (Map.Entry<Livro, LocalDate> entry : emprestimo.getLivrosEmprestado().entrySet()) {
+            LocalDate dataDevolucao = entry.getValue();
+            String dataDevolucaoTexto = (dataDevolucao != null) ? dataDevolucao.format(fmt) : "Pendente";
 
-        System.out.println("------------------------------");
+            System.out.printf("ID: %-5d Título: %-65s Devolução: %s%n",
+                    entry.getKey().getId(), entry.getKey().getTitulo(),
+                    dataDevolucaoTexto);
+        }
     }
 }

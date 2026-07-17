@@ -1,15 +1,15 @@
 package servicos;
 
-import entidades.Emprestimo;
-import entidades.Livro;
 import entidades.Usuario;
 import repositorios.RepositorioUsuario;
 import servicos.excecao.RecursoNaoEncontrado;
 
-import java.util.*;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class ServicoUsuario implements VerificarListas {
+public class ServicoUsuario implements VerificarListas<Usuario> {
 
     private final RepositorioUsuario repositorioUsuario;
 
@@ -23,7 +23,7 @@ public class ServicoUsuario implements VerificarListas {
     }
 
     public void cadastrar(Usuario usuario){
-        verificarUsuario(usuario);
+        verificarSeUsuarioPossuiCadastro(usuario);
         repositorioUsuario.salvar(usuario);
     }
 
@@ -40,7 +40,7 @@ public class ServicoUsuario implements VerificarListas {
     public void bloquearUsuarioPorId(long idUsuario){
         Usuario usuario = buscarPorId(idUsuario);
 
-        if(!usuario.isLiberado()){
+        if(!verificarSituacaoDoUsuario(usuario)){
             throw new IllegalStateException("Usuário id " + idUsuario + " já está bloqueado.");
         }
 
@@ -50,7 +50,7 @@ public class ServicoUsuario implements VerificarListas {
     public void desbloquearUsuarioPorId(long idUsuario){
         Usuario usuario = buscarPorId(idUsuario);
 
-        if(usuario.isLiberado()){
+        if(verificarSituacaoDoUsuario(usuario)){
             throw new IllegalStateException("Usuário id " + idUsuario + " já está liberado.");
         }
 
@@ -110,10 +110,15 @@ public class ServicoUsuario implements VerificarListas {
         entidade.setEmail(obj.getEmail());
     }
 
-    private void verificarUsuario(Usuario usuario){
+    private void verificarSeUsuarioPossuiCadastro(Usuario usuario){
         if(repositorioUsuario.existePorEmail(usuario.getEmail())){
             throw new IllegalStateException("Já existe um usuário cadastrado com o e-mail: " + usuario.getEmail());
         }
+    }
+
+    public boolean verificarSituacaoDoUsuario (Usuario usuario){
+        buscarPorId(usuario.getId()); // Garante que o usuário exista.
+        return usuario.isLiberado();
     }
 
     public void imprimir(Usuario usuario){
