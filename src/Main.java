@@ -478,6 +478,7 @@ private static void emprestarLivro(Scanner sc, ServicoEmprestimo servicoEmpresti
 
         if(livros.contains(livro)){
             System.out.println("Livro com id repetido! Não contabilizado.");
+            continue;
         }
         livros.add(livro);
 
