@@ -1,3 +1,4 @@
+import entidades.Emprestimo;
 import entidades.Livro;
 import entidades.Usuario;
 import repositorios.RepositorioEmprestimo;
@@ -37,12 +38,10 @@ void main() {
 
         try {
             opcao = sc.nextInt();
-        }
-        catch (InputMismatchException e){
+        } catch (InputMismatchException e) {
             System.out.println("Opção inválida, digite um número.");
             continue;
-        }
-        finally {
+        } finally {
             sc.nextLine();
         }
 
@@ -118,29 +117,91 @@ void main() {
                 break;
 
             case 3:
-                System.out.println("============================= EMPRÉSTIMOS =============================");
-                System.out.println(" 1 - Emprestar livros");
-                System.out.println(" 2 - Devolver livro");
-                System.out.println(" 0 - Voltar");
+                boolean subMenuEmprestimo = true;
+                while (subMenuEmprestimo) {
+                    System.out.println("============================= EMPRÉSTIMOS =============================");
+                    System.out.println(" 1 - Emprestar livros");
+                    System.out.println(" 2 - Devolver livro");
+                    System.out.println(" 0 - Voltar");
+
+                    try {
+                        opcaoInterna = sc.nextInt();
+                    } catch (InputMismatchException e) {
+                        System.out.println("Opção inválida, digite um número.");
+                        continue;
+                    } finally {
+                        sc.nextLine();
+                    }
+
+                    switch (opcaoInterna) {
+                        case 1 -> emprestarLivro(sc, servicoEmprestimo, servicoLivro, servicoUsuario);
+                        case 2 -> devolverLivro(sc, servicoEmprestimo);
+                        case 0 -> subMenuEmprestimo = false;
+                        default -> System.out.println("Opção inválida, tente novamente!");
+                    }
+                }
                 break;
             case 4:
-                System.out.println("============================= RELATÓRIOS =============================");
-                System.out.println(" 1 - Listar usuários liberados");
-                System.out.println(" 2 - Listar usuários bloqueados");
-                System.out.println(" 3 - Listar todos os usuários");
-                System.out.println();
-                System.out.println(" 4 - Listar livros disponíveis");
-                System.out.println(" 5 - Listar livros emprestados");
-                System.out.println(" 6 - Listar todos os livros");
-                System.out.println();
-                System.out.println(" 7 - Listar empréstimos ativos");
-                System.out.println(" 0 - Voltar");
+                boolean subMenuRelatorio = true;
+                while (subMenuRelatorio) {
+                    System.out.println("============================= RELATÓRIOS =============================");
+                    System.out.println(" 1 - Listar usuários liberados");
+                    System.out.println(" 2 - Listar usuários bloqueados");
+                    System.out.println(" 3 - Listar todos os usuários");
+                    System.out.println();
+                    System.out.println(" 4 - Listar livros disponíveis");
+                    System.out.println(" 5 - Listar livros emprestados");
+                    System.out.println(" 6 - Listar todos os livros");
+                    System.out.println();
+                    System.out.println(" 7 - Listar empréstimos ativos");
+                    System.out.println(" 0 - Voltar");
+
+                    try {
+                        opcaoInterna = sc.nextInt();
+                    } catch (InputMismatchException e) {
+                        System.out.println("Opção inválida, digite um número.");
+                        continue;
+                    } finally {
+                        sc.nextLine();
+                    }
+
+                    switch (opcaoInterna){
+                        case 1 -> usuariosLiberados(servicoUsuario);
+                        case 2 -> usuariosBloqueados(servicoUsuario);
+                        case 3 -> todosOsUsuarios(servicoUsuario);
+                        case 4 -> livrosDisponiveis(servicoLivro);
+                        case 5 -> livrosEmprestados(servicoLivro);
+                        case 6 -> todosOsLivros(servicoLivro);
+                        case 7 -> emprestimosAtivos(servicoEmprestimo);
+                        case 0 -> subMenuRelatorio = false;
+                        default -> System.out.println("Opção inválida, tente novamente!");
+                    }
+                }
                 break;
             case 5:
-                System.out.println("============================ COMPROVANTES =============================");
-                System.out.println(" 1 - Buscar histórico por usuário");
-                System.out.println(" 2 - Buscar histórico por livro");
-                System.out.println(" 0 - Voltar");
+                boolean subMenuComprovantes = true;
+                while (subMenuComprovantes) {
+                    System.out.println("============================ COMPROVANTES =============================");
+                    System.out.println(" 1 - Buscar histórico por usuário");
+                    System.out.println(" 2 - Buscar histórico por livro");
+                    System.out.println(" 0 - Voltar");
+
+                    try {
+                        opcaoInterna = sc.nextInt();
+                    } catch (InputMismatchException e) {
+                        System.out.println("Opção inválida, digite um número.");
+                        continue;
+                    } finally {
+                        sc.nextLine();
+                    }
+
+                    switch (opcaoInterna){
+                        case 1 -> historicoPorUsuario(sc, servicoEmprestimo);
+                        case 2 -> historicoPorLivro(sc, servicoEmprestimo);
+                        case 0 -> subMenuComprovantes = false;
+                        default -> System.out.println("Opção inválida, tente novamente!");
+                    }
+                }
                 break;
             case 0:
                 rodando = false;
@@ -155,13 +216,13 @@ void main() {
     sc.close();
 }
 
-private static void cadastrarUsuario(Scanner sc, ServicoUsuario servicoUsuario){
+private static void cadastrarUsuario(Scanner sc, ServicoUsuario servicoUsuario) {
     System.out.println("Digite os dados do usuário: ");
     System.out.print("Nome: ");
     String nome = sc.nextLine();
 
     Optional<String> emailOpt = lerEmailComValidacao(sc);
-    if(emailOpt.isEmpty()){
+    if (emailOpt.isEmpty()) {
         System.out.println("Cadastro cancelado.");
         return;
     }
@@ -171,8 +232,7 @@ private static void cadastrarUsuario(Scanner sc, ServicoUsuario servicoUsuario){
     try {
         servicoUsuario.cadastrar(new Usuario(nome, email));
         System.out.println("Usuário registrado com sucesso.");
-    }
-    catch (IllegalStateException e){
+    } catch (IllegalStateException e) {
         System.out.println("Erro: " + e.getMessage());
     }
 }
@@ -181,10 +241,7 @@ private static void atualizarUsuario(Scanner sc, ServicoUsuario servicoUsuario) 
 
     long idUsuario = lerNumerosComValidacao(sc, "Digite o id do usuário (0 para cancelar): ");
 
-    if (idUsuario == 0){
-        System.out.println("Operação cancelada.");
-        return;
-    }
+    if(cancelarOperacao(idUsuario)) return;
 
     System.out.println("Usuário a ser atualizado:");
 
@@ -200,7 +257,7 @@ private static void atualizarUsuario(Scanner sc, ServicoUsuario servicoUsuario) 
     String nome = sc.nextLine();
 
     Optional<String> emailOpt = lerEmailComValidacao(sc);
-    if(emailOpt.isEmpty()){
+    if (emailOpt.isEmpty()) {
         System.out.println("Atualização cancelada.");
         return;
     }
@@ -210,20 +267,16 @@ private static void atualizarUsuario(Scanner sc, ServicoUsuario servicoUsuario) 
     try {
         servicoUsuario.atualizarUsuario(idUsuario, new Usuario(nome, email));
         System.out.println("Usuário atualizado com sucesso.");
-    }
-    catch (RecursoNaoEncontrado e){
+    } catch (RecursoNaoEncontrado e) {
         System.out.println("Erro: " + e.getMessage());
     }
 }
 
-private static void removerUsuario(Scanner sc, ServicoUsuario servicoUsuario, ServicoEmprestimo servicoEmprestimo){
+private static void removerUsuario(Scanner sc, ServicoUsuario servicoUsuario, ServicoEmprestimo servicoEmprestimo) {
 
     long idUsuario = lerNumerosComValidacao(sc, "Digite o id do usuário (0 para cancelar): ");
 
-    if (idUsuario == 0){
-        System.out.println("Operação cancelada.");
-        return;
-    }
+    if(cancelarOperacao(idUsuario)) return;
 
     try {
         if (servicoEmprestimo.usuarioTemEmprestimoAtivo(idUsuario)) {
@@ -237,74 +290,59 @@ private static void removerUsuario(Scanner sc, ServicoUsuario servicoUsuario, Se
     }
 }
 
-private static void bloquearUsuario(Scanner sc, ServicoUsuario servicoUsuario){
+private static void bloquearUsuario(Scanner sc, ServicoUsuario servicoUsuario) {
 
     long idUsuario = lerNumerosComValidacao(sc, "Digite o id do usuário (0 para cancelar): ");
 
-    if (idUsuario == 0){
-        System.out.println("Operação cancelada.");
-        return;
-    }
+    if(cancelarOperacao(idUsuario)) return;
 
     try {
         servicoUsuario.bloquearUsuarioPorId(idUsuario);
         System.out.println("Usuário id " + idUsuario + " bloqueado com sucesso");
-    }
-    catch (IllegalStateException | RecursoNaoEncontrado e) {
+    } catch (IllegalStateException | RecursoNaoEncontrado e) {
         System.out.println("Erro: " + e.getMessage());
     }
 }
 
-private static void desbloquearUsuario(Scanner sc, ServicoUsuario servicoUsuario){
+private static void desbloquearUsuario(Scanner sc, ServicoUsuario servicoUsuario) {
 
     long idUsuario = lerNumerosComValidacao(sc, "Digite o id do usuário (0 para cancelar): ");
 
-    if (idUsuario == 0){
-        System.out.println("Operação cancelada.");
-        return;
-    }
+    if(cancelarOperacao(idUsuario)) return;
 
     try {
         servicoUsuario.desbloquearUsuarioPorId(idUsuario);
         System.out.println("Usuário id " + idUsuario + " desbloqueado com sucesso");
-    }
-    catch (IllegalStateException | RecursoNaoEncontrado e) {
+    } catch (IllegalStateException | RecursoNaoEncontrado e) {
         System.out.println("Erro: " + e.getMessage());
     }
 }
 
-private static void buscarUsuarioPorNome(Scanner sc, ServicoUsuario servicoUsuario){
+private static void buscarUsuarioPorNome(Scanner sc, ServicoUsuario servicoUsuario) {
     System.out.print("Digite o nome do usuário: ");
     String nome = sc.nextLine();
 
     try {
         List<Usuario> usuarios = servicoUsuario.listarPorNome(nome);
         servicoUsuario.imprimirLista(usuarios);
-    }
-    catch (RecursoNaoEncontrado e){
+    } catch (RecursoNaoEncontrado e) {
         System.out.println("Erro: " + e.getMessage());
     }
 }
 
-private static void buscarUsuarioPorId(Scanner sc, ServicoUsuario servicoUsuario){
-
+private static void buscarUsuarioPorId(Scanner sc, ServicoUsuario servicoUsuario) {
     long idUsuario = lerNumerosComValidacao(sc, "Digite o id do usuário (0 para cancelar): ");
-
-    if (idUsuario == 0){
-        System.out.println("Operação cancelada.");
-        return;
-    }
+    if(cancelarOperacao(idUsuario)) return;
 
     try {
         Usuario usuario = servicoUsuario.buscarPorId(idUsuario);
         servicoUsuario.imprimir(usuario);
-    }
-    catch (RecursoNaoEncontrado e){
+    } catch (RecursoNaoEncontrado e) {
         System.out.println("Erro: " + e.getMessage());
     }
 }
 
-private static void cadastrarLivro(Scanner sc, ServicoLivro servicoLivro){
+private static void cadastrarLivro(Scanner sc, ServicoLivro servicoLivro) {
     System.out.println("Digite os dados do livro: ");
     System.out.print("Título: ");
     String titulo = sc.nextLine();
@@ -314,7 +352,7 @@ private static void cadastrarLivro(Scanner sc, ServicoLivro servicoLivro){
     int anoAtual = LocalDate.now().getYear();
     long anoValidado = lerNumerosComValidacao(sc, "Ano (yyyy): ");
 
-    while (anoValidado < 1000 || anoValidado > anoAtual){
+    while (anoValidado < 1000 || anoValidado > anoAtual) {
         System.out.println("Ano digitado está incorreto!");
         anoValidado = lerNumerosComValidacao(sc, "Ano (yyyy): ");
     }
@@ -324,14 +362,9 @@ private static void cadastrarLivro(Scanner sc, ServicoLivro servicoLivro){
     servicoLivro.cadastrar(new Livro(titulo, autor, ano));
 }
 
-private static void atualizarLivro(Scanner sc, ServicoLivro servicoLivro){
-
+private static void atualizarLivro(Scanner sc, ServicoLivro servicoLivro) {
     long idLivro = lerNumerosComValidacao(sc, "Digite o id do livro (0 para cancelar): ");
-
-    if (idLivro == 0){
-        System.out.println("Operação cancelada.");
-        return;
-    }
+    if(cancelarOperacao(idLivro)) return;
 
     System.out.println("Livro a ser atualizado:");
 
@@ -351,7 +384,7 @@ private static void atualizarLivro(Scanner sc, ServicoLivro servicoLivro){
     int anoAtual = LocalDate.now().getYear();
     long anoValidado = lerNumerosComValidacao(sc, "Digite o ano do livro (yyyy): ");
 
-    while (anoValidado < 1000 || anoValidado > anoAtual){
+    while (anoValidado < 1000 || anoValidado > anoAtual) {
         System.out.println("Ano digitado está incorreto!");
         anoValidado = lerNumerosComValidacao(sc, "Digite o ano do livro (yyyy): ");
     }
@@ -361,19 +394,14 @@ private static void atualizarLivro(Scanner sc, ServicoLivro servicoLivro){
     try {
         servicoLivro.atualizarLivro(idLivro, new Livro(titulo, autor, ano));
         System.out.println("Livro atualizado com sucesso.");
-    }
-    catch (RecursoNaoEncontrado e){
+    } catch (RecursoNaoEncontrado e) {
         System.out.println("Erro: " + e.getMessage());
     }
 }
 
-private static void removerLivro(Scanner sc, ServicoLivro servicoLivro, ServicoEmprestimo servicoEmprestimo){
+private static void removerLivro(Scanner sc, ServicoLivro servicoLivro, ServicoEmprestimo servicoEmprestimo) {
     long idLivro = lerNumerosComValidacao(sc, "Digite o id do livro (0 para cancelar): ");
-
-    if (idLivro == 0){
-        System.out.println("Operação cancelada.");
-        return;
-    }
+    if(cancelarOperacao(idLivro)) return;
 
     try {
         if (servicoEmprestimo.livroTemEmprestimoAtivo(idLivro)) {
@@ -387,45 +415,219 @@ private static void removerLivro(Scanner sc, ServicoLivro servicoLivro, ServicoE
     }
 }
 
-private static void buscarLivroPorTitulo(Scanner sc, ServicoLivro servicoLivro){
+private static void buscarLivroPorTitulo(Scanner sc, ServicoLivro servicoLivro) {
     System.out.print("Digite o título do livro: ");
     String titulo = sc.nextLine();
 
     try {
         List<Livro> livros = servicoLivro.listarPorTitulo(titulo);
         servicoLivro.imprimirLista(livros);
-    }
-    catch (RecursoNaoEncontrado e){
+    } catch (RecursoNaoEncontrado e) {
         System.out.println("Erro: " + e.getMessage());
     }
 }
 
-private static void buscarLivroPorId(Scanner sc, ServicoLivro servicoLivro){
+private static void buscarLivroPorId(Scanner sc, ServicoLivro servicoLivro) {
     long idLivro = lerNumerosComValidacao(sc, "Digite o id do livro (0 para cancelar): ");
-
-    if (idLivro == 0){
-        System.out.println("Operação cancelada.");
-        return;
-    }
+    if(cancelarOperacao(idLivro)) return;
 
     try {
         Livro livro = servicoLivro.buscarPorId(idLivro);
         servicoLivro.imprimir(livro);
+    } catch (RecursoNaoEncontrado e) {
+        System.out.println("Erro: " + e.getMessage());
+    }
+}
+
+private static void emprestarLivro(Scanner sc, ServicoEmprestimo servicoEmprestimo, ServicoLivro servicoLivro, ServicoUsuario servicoUsuario) {
+    long idUsuario = lerNumerosComValidacao(sc, "Digite o id do usuário (0 para cancelar): ");
+    if(cancelarOperacao(idUsuario)) return;
+
+    Usuario usuario;
+    try {
+        usuario = servicoUsuario.buscarPorId(idUsuario);
+    } catch (RecursoNaoEncontrado e) {
+        System.out.println("Erro: " + e.getMessage());
+        return;
+    }
+
+    boolean usuarioLiberado = servicoUsuario.verificarSituacaoDoUsuario(usuario);
+    if (!usuarioLiberado){
+        System.out.println("Usuário bloqueado! Empréstimo cancelado.");
+        return;
+    }
+
+    Set<Livro> livros = new HashSet<>();
+    while (true) {
+        long idLivro = lerNumerosComValidacao(sc, "Digite o id do livro (0 para cancelar o empréstimo inteiro): ");
+        if(cancelarOperacao(idLivro)) return;
+
+        Livro livro;
+        try {
+            livro = servicoLivro.buscarPorId(idLivro);
+        } catch (RecursoNaoEncontrado e) {
+            System.out.println("Erro: " + e.getMessage());
+            continue;
+        }
+
+        boolean livroDisponivel = servicoLivro.verificarSituacaoDoLivro(livro);
+        if (!livroDisponivel){
+            System.out.println("Livro indisponível! Escolha outro livro.");
+            continue;
+        }
+
+        if(livros.contains(livro)){
+            System.out.println("Livro com id repetido! Não contabilizado.");
+        }
+        livros.add(livro);
+
+        if (livros.size() < 3) {
+            System.out.print("Deseja registrar + 1 livro ao emprestimo? (s/n) ");
+            if (sc.nextLine().equalsIgnoreCase("n")) {
+                break;
+            }
+        } else {
+            System.out.println("Limite máximo de 3 livros atingido! Prosseguindo com o emprestimo...");
+            break;
+        }
+    }
+
+    try {
+        Map<Livro, LocalDate> livrosEmprestados = servicoEmprestimo.criarMapDeLivros(livros);
+        servicoEmprestimo.salvarEmprestimo(new Emprestimo(usuario, livrosEmprestados));
+    } catch (IllegalArgumentException | IllegalStateException e) {
+        System.out.println("Erro: " + e.getMessage());
+    }
+}
+
+private static void devolverLivro(Scanner sc, ServicoEmprestimo servicoEmprestimo) {
+    while (true) {
+        long idLivro = lerNumerosComValidacao(sc, "Digite o id do livro (0 para cancelar): ");
+        if(cancelarOperacao(idLivro)) return;
+
+        try {
+            servicoEmprestimo.devolverLivroId(idLivro);
+            System.out.println("Livro devolvido com sucesso!");
+
+            System.out.println();
+
+            System.out.print("Deseja devolver outro livro? (s/n) ");
+            String op = sc.nextLine();
+
+            while (!op.equalsIgnoreCase("n") && !op.equalsIgnoreCase("s")) {
+                System.out.print("Opção inválida! Escolha uma opção válida (s/n): ");
+                op = sc.nextLine();
+            }
+
+            if (op.equalsIgnoreCase("n")) {
+                break;
+            }
+
+        } catch (RecursoNaoEncontrado e) {
+            System.out.println("Erro: " + e.getMessage());
+        }
+    }
+}
+
+private static void usuariosLiberados(ServicoUsuario servicoUsuario){
+    try {
+        List<Usuario> usuariosLiberados = servicoUsuario.listarLiberados();
+        servicoUsuario.imprimirLista(usuariosLiberados);
     }
     catch (RecursoNaoEncontrado e){
         System.out.println("Erro: " + e.getMessage());
     }
 }
 
-private static long lerNumerosComValidacao(Scanner sc, String mensagem){
-    while (true){
+private static void usuariosBloqueados(ServicoUsuario servicoUsuario){
+    try {
+        List<Usuario> usuariosBloqueados = servicoUsuario.listarBloqueados();
+        servicoUsuario.imprimirLista(usuariosBloqueados);
+    }
+    catch (RecursoNaoEncontrado e){
+        System.out.println("Erro: " + e.getMessage());
+    }
+}
+
+private static void todosOsUsuarios(ServicoUsuario servicoUsuario){
+    try {
+        List<Usuario> todosOsUsuarios = servicoUsuario.listar();
+        servicoUsuario.imprimirLista(todosOsUsuarios);
+    }
+    catch (RecursoNaoEncontrado e){
+        System.out.println("Erro: " + e.getMessage());
+    }
+}
+
+private static void livrosDisponiveis(ServicoLivro servicoLivro){
+    try {
+        List<Livro> livrosDisponiveis = servicoLivro.listarDisponiveis();
+        servicoLivro.imprimirLista(livrosDisponiveis);
+    }
+    catch (RecursoNaoEncontrado e){
+        System.out.println("Erro: " + e.getMessage());
+    }
+}
+
+private static void livrosEmprestados (ServicoLivro servicoLivro) {
+    try {
+        List<Livro> livrosEmprestado = servicoLivro.listarEmprestados();
+        servicoLivro.imprimirLista(livrosEmprestado);
+    } catch (RecursoNaoEncontrado e) {
+        System.out.println("Erro: " + e.getMessage());
+    }
+}
+
+private static void todosOsLivros (ServicoLivro servicoLivro) {
+    try {
+        List<Livro> todosOsLivros = servicoLivro.listar();
+        servicoLivro.imprimirLista(todosOsLivros);
+    } catch (RecursoNaoEncontrado e) {
+        System.out.println("Erro: " + e.getMessage());
+    }
+}
+
+private static void emprestimosAtivos (ServicoEmprestimo servicoEmprestimo) {
+    try {
+        List<Emprestimo> emprestimosAtivos = servicoEmprestimo.listar();
+        servicoEmprestimo.imprimirLista(emprestimosAtivos);
+    } catch (RecursoNaoEncontrado e) {
+        System.out.println("Erro: " + e.getMessage());
+    }
+}
+
+private static void historicoPorUsuario (Scanner sc, ServicoEmprestimo servicoEmprestimo) {
+    long idUsuario = lerNumerosComValidacao(sc, "Digite o id do usuário (0 para cancelar): ");
+    if(cancelarOperacao(idUsuario)) return;
+
+    try {
+        List<Emprestimo> emprestimosUsuario = servicoEmprestimo.historicoUsuario(idUsuario);
+        servicoEmprestimo.imprimirLista(emprestimosUsuario);
+    } catch (RecursoNaoEncontrado e) {
+        System.out.println("Erro: " + e.getMessage());
+    }
+}
+
+private static void historicoPorLivro (Scanner sc, ServicoEmprestimo servicoEmprestimo) {
+    long idLivro = lerNumerosComValidacao(sc, "Digite o id do livro (0 para cancelar): ");
+    if(cancelarOperacao(idLivro)) return;
+
+    try {
+        List<Emprestimo> emprestimosLivro = servicoEmprestimo.historicoLivro(idLivro);
+        servicoEmprestimo.imprimirLista(emprestimosLivro);
+    } catch (RecursoNaoEncontrado e) {
+        System.out.println("Erro: " + e.getMessage());
+    }
+}
+
+private static long lerNumerosComValidacao(Scanner sc, String mensagem) {
+    while (true) {
         System.out.print(mensagem);
         try {
             long id = sc.nextLong();
             sc.nextLine();
             return id;
-        }
-        catch (InputMismatchException e){
+        } catch (InputMismatchException e) {
             System.out.println("Digite um número válido.");
             sc.nextLine();
         }
@@ -449,6 +651,16 @@ private static Optional<String> lerEmailComValidacao(Scanner sc) {
     }
 }
 
-private static boolean emailValido (String email){
+private static boolean cancelarOperacao (long numero){
+    if (numero == 0) {
+        System.out.println("Operação cancelada.");
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+private static boolean emailValido(String email) {
     return email.matches(REGEX_EMAIL);
 }
