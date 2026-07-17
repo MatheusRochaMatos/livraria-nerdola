@@ -62,7 +62,7 @@ public class Emprestimo implements Entidade {
     }
 
     public void registrarDataDeDevolucao(Livro livro, LocalDate data){
-        livrosEmprestado.computeIfPresent(livro, (_, _) -> data);
+        livrosEmprestado.replace(livro, data);
     }
 
     public LocalDate getDataEmprestimo() {
